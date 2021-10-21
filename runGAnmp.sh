@@ -5,4 +5,4 @@
 #SBATCH --mem-per-cpu=16G
 source ~/lgraha/bin/activate
 cd ~/scratch/CPSC532J/A2
-python Atari_genetic_nmp.py 
+python Atari_genetic.py 

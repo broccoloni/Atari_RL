@@ -12,15 +12,18 @@ from ale_py import ALEInterface
 
 def evaluate(game,seed,mut,env,avg_rewards,i):
     #create initial model
-    params = game_params(game)_
-    numas = params[0]
+    params = game_params(game)
+    numactions = params[0]
     inshape = params[1]
     mut_power = params[2]
     test_size = params[3]
-    ps = params[4]
-    numcl = params[5]
+    poolsizes = params[4]
+    numconvlayers = params[5]
     torch.manual_seed(seed)
-    atarinet = AtariNetCONV(inshape=inshape,poolsizes = ps,numconvlayers = numcl, outsize = numas).eval()
+    atarinet = AtariNetCONV(inshape=inshape,
+                            poolsizes = poolsizes,
+                            numconvlayers = numconvlayers, 
+                            outsize = numactions).eval()
 
     #apply mutations
     atarinet.mutate(mut_power,mut)
@@ -37,7 +40,7 @@ def evaluate(game,seed,mut,env,avg_rewards,i):
 #             env.render(mode='human')
 
             #Preprocessing
-            observation = ProcessIm(obs,prev_obs)    
+            observation = ProcessIm(game,t,obs,prev_obs)    
 
             #Forward pass
             probs = atarinet.forward(observation)
@@ -100,7 +103,7 @@ def game_params(game):
         poolsizes = [2,2]
         numconvlayers = 10
 
-    return [numaction,inshape,mut_power,test_size,poolsizes,numconvlayers]
+    return [numactions,inshape,mut_power,test_size,poolsizes,numconvlayers]
 
 if __name__ == "__main__":
     game = "Tetris"

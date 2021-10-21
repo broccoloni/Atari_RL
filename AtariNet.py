@@ -20,7 +20,7 @@ def fcLayer(in_channels,out_channels):
 class AtariNetCONV(nn.Module):
     #The Atari games have a frame size of 210x160, but we can crop it for some of them
     def __init__(self, inshape = [210,160], poolsizes = [2,2], numconvlayers = 3, outsize = 1):
-        super(AtariNet, self).__init__()
+        super(AtariNetCONV, self).__init__()
         self.inshape = inshape
         self.insize = np.prod(inshape)
         self.outsize = outsize
@@ -33,13 +33,13 @@ class AtariNetCONV(nn.Module):
         for i in range(numconvlayers-1):
             self.layers.append(convLayer(10,10))
 
-        self.layers.append(nn.MaxPool2d(kernel_size = poolsizes[1], stride = poolsize[1]))
+        self.layers.append(nn.MaxPool2d(kernel_size = poolsizes[1], stride = poolsizes[1]))
         
         height = inshape[0]//poolsizes[0]//poolsizes[1]
         width =  inshape[1]//poolsizes[0]//poolsizes[1]
 
-        self.layers.append(fcLayer(10*height*width,500)
-        self.layers.append(500,outsize)
+        self.layers.append(fcLayer(10*height*width,500))
+        self.layers.append(nn.Linear(500,outsize))
         self.numlayers = len(self.layers)
 
     def forward(self,x):
@@ -85,7 +85,7 @@ class AtariNetCONV(nn.Module):
 class AtariNetFC(nn.Module):
     #The Atari games have a frame size of 210x160, but we can crop it for some of them
     def __init__(self, inshape = [210,160], midsize = 500, outsize = 1):
-        super(AtariNet, self).__init__()
+        super(AtariNetFC, self).__init__()
         self.insize = np.prod(insize)
         self.midsize = midsize
         self.outsize = outsize
@@ -149,23 +149,18 @@ def ProcessIm(game,t,obs,prev_obs):
         #it shakes up and down every other timestep
          #even timestep
         if t%2 == 0:
-            obs = obs[27:203,22:64]
-            prev_obs = prev_obs[28:204,22:64]
+            obs1 = obs[27:203,22:64]
+            obs2 = prev_obs[28:204,22:64]
         #odd timestep
         else:
-            obs = obs[28:204,22:64]
-            prev_obs = prev_obs[27:203,22:64]
+            obs1 = obs[28:204,22:64]
+            obs2 = prev_obs[27:203,22:64]
    
-    #elif game == 'DemonAttack':
-        #In demon attack the difference between
-        #two consecutive frames is much more 
-        #relevant to tell where the demons are
-        #moving and bullets are going, so we will
-        #use the difference between two consecutive
-        #frames to train the network. Also, demon
-        #attach uses the full frame, as opposed to
-        #tetris, which only uses part of it.
-    observation = torch.Tensor(obs - prev_obs)
+    elif game == 'DemonAttack':
+        obs1 = obs
+        obs2 = prev_obs
+    observation = torch.Tensor(obs1 - obs2)
+    observation.unsqueeze_(0)
     observation.unsqueeze_(0)
     return observation
         
