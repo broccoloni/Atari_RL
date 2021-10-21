@@ -8,7 +8,9 @@ import torch
 from AtariNet import *
 from tqdm import tqdm
 import os
+from copy import deepcopy
 from ale_py import ALEInterface
+almightyint = 6671111 #call pizza pizza hey hey hey
 
 def evaluate(game,seed,mut,env,avg_rewards,i):
     #create initial model
@@ -20,17 +22,15 @@ def evaluate(game,seed,mut,env,avg_rewards,i):
     poolsizes = params[4]
     numconvlayers = params[5]
 
-    print("Making network")
     torch.manual_seed(seed)
     atarinet = AtariNetCONV(inshape=inshape,
                             poolsizes = poolsizes,
                             numconvlayers = numconvlayers, 
-                            outsize = numactions).eval()
+                            outsize = numactions)
 
-    print("mutating network")
     #apply mutations
     atarinet.mutate(mut_power,mut)
-    print("beginning test")
+            
     total_rewards = []
     for i_episode in range(test_size):
         #print(i,i_episode)
@@ -59,9 +59,7 @@ def evaluate(game,seed,mut,env,avg_rewards,i):
             rewards.append(reward)
         total_rewards.append(np.sum(rewards))
     #print("finished ind:",i)
-    print("updating avg rewards")
     avg_rewards[i] = np.mean(total_rewards)
-    print(avg_rewards)
 
 def select_and_mutate(population,mutations,avg_rewards,pop_size,trunc):
     fit_order = np.argsort(avg_rewards)[::-1] #best to worst
@@ -76,23 +74,26 @@ def select_and_mutate(population,mutations,avg_rewards,pop_size,trunc):
     #survivors = np.random.choice(pop_size+arch_size,pop_size,p = selection_probs)
 
     #cutoff selection
+    np.random.seed(seed = almightyint)
     survivors = fit_order[np.random.randint(0,trunc,size = pop_size)]
     arch_size = len(population) - pop_size
     survivors = np.append(survivors,fit_order[:arch_size])
     population = [population[i] for i in survivors]    
 
-    mutations = [mutations[i] for i in survivors]
+    mutations = [deepcopy(mutations[i]) for i in survivors]
     for i in range(pop_size):
         mutations[i].append(np.random.randint(almightyint))
+        
+    return population,mutations,avg_rewards
 
-def load_gen(game,cur_gen,pop_size):
+def load_gen(game,cur_gen,pop_size,trunc):
     data = np.load("{}/GAseeds_{}_nmp_{}.npz".format(game,game,cur_gen),allow_pickle = True)
     data = [data[key] for key in data]
     data = data[1]
     population = data[0]
     mutations = data[1]
     avg_rewards = np.array(data[2],dtype = float)
-    select_and_mutate(population,mutations,avg_rewards,pop_size)
+    select_and_mutate(population,mutations,avg_rewards,pop_size,trunc)
     return population,mutations,avg_rewards
 
 def game_params(game):
@@ -100,10 +101,10 @@ def game_params(game):
         numactions = 18
         inshape = [176,42]
         mut_power = 0.002
-        test_size = 3
+        test_size = 30
         poolsizes = [3,2] #3 makes sense since tetris blocks are 3 pixels wide
         numconvlayers = 6 #makes field of vision of last layer full width of processed frame
-        trunc = 3
+        trunc = 50
 
     elif game == 'DemonAttack':
         numactions = 6
@@ -118,10 +119,9 @@ def game_params(game):
 
 if __name__ == "__main__":
     game = "Tetris"
-    almightyint = 6671111 #call pizza pizza hey hey hey
-    pop_size = 5
-    arch_size = 1
-    num_gens = 2
+    pop_size = 500
+    arch_size = 10
+    num_gens = 5
     cur_gen = 0
     params = game_params(game)
     trunc = params[-1]
@@ -131,12 +131,12 @@ if __name__ == "__main__":
     env = gym.wrappers.GrayScaleObservation(env)
 
     if cur_gen != 0:
-        load_gen(game,cur_gen,pop_size)
+        population,mutations,avg_rewards = load_gen(game,cur_gen,pop_size,trunc)
     else:
         population = np.random.randint(0,almightyint,size = pop_size+arch_size)
         mutations = [[] for i in range(pop_size+arch_size)]
         avg_rewards = np.zeros(arch_size+pop_size)
-    
+
     print("Starting GA:")
     for gen in range(cur_gen,cur_gen+num_gens):
         print("Generation:\t{}/{}".format(gen+1,num_gens))
@@ -144,12 +144,10 @@ if __name__ == "__main__":
             seed = population[i]
             mut = mutations[i]
             evaluate(game,seed,mut,env,avg_rewards,i)
-
+            
         #save here so we can reconstruct the next generation if need be
-        print("saving...")
         np.savez("{}/GAseeds_{}_nmp_{}.npz".format(game,game,gen+1),[population,mutations,avg_rewards],allow_pickle = True)
-        print("selecting next gen...")
-        select_and_mutate(population,mutations,avg_rewards,pop_size,trunc)
+        population,mutations,avg_rewards = select_and_mutate(population,mutations,avg_rewards,pop_size,trunc)
 
 
 
