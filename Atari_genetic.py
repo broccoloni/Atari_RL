@@ -99,7 +99,7 @@ def load_gen(game,cur_gen,pop_size,trunc):
 def game_params(game):
     if game == 'Tetris':
         numactions = 18
-        inshape = [176,42]
+        inshape = [2,176,42]
         mut_power = 0.002
         test_size = 30
         poolsizes = [3,2] #3 makes sense since tetris blocks are 3 pixels wide
@@ -108,7 +108,7 @@ def game_params(game):
 
     elif game == 'DemonAttack':
         numactions = 6
-        inshape = [210,160]
+        inshape = [1,210,160]
         mut_power = 0.002
         test_size = 30
         poolsizes = [2,2]
@@ -121,7 +121,7 @@ if __name__ == "__main__":
     game = "Tetris"
     pop_size = 500
     arch_size = 10
-    num_gens = 5
+    num_gens = 2
     cur_gen = 0
     params = game_params(game)
     trunc = params[-1]

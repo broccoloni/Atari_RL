@@ -19,7 +19,7 @@ def fcLayer(in_channels,out_channels):
 
 class AtariNetCONV(nn.Module):
     #The Atari games have a frame size of 210x160, but we can crop it for some of them
-    def __init__(self, inshape = [210,160], poolsizes = [2,2], numconvlayers = 3, outsize = 1):
+    def __init__(self, inshape = [1,210,160], poolsizes = [2,2], numconvlayers = 3, outsize = 1):
         super(AtariNetCONV, self).__init__()
         self.inshape = inshape
         self.insize = np.prod(inshape)
@@ -29,7 +29,7 @@ class AtariNetCONV(nn.Module):
         convlayers = [nn.MaxPool2d(kernel_size = poolsizes[0], stride = poolsizes[0])]
         
         #conv layers
-        convlayers.append(convLayer(1,10))
+        convlayers.append(convLayer(inshape[0],10))
         for i in range(numconvlayers-1):
             convlayers.append(convLayer(10,10))
 
@@ -37,8 +37,8 @@ class AtariNetCONV(nn.Module):
         self.convlayers = nn.ModuleList(convlayers)
         self.numconvlayers = len(self.convlayers)
         
-        height = inshape[0]//poolsizes[0]//poolsizes[1]
-        width =  inshape[1]//poolsizes[0]//poolsizes[1]
+        height = inshape[1]//poolsizes[0]//poolsizes[1]
+        width =  inshape[2]//poolsizes[0]//poolsizes[1]
 
         fclayers = [fcLayer(10*height*width,500)]
         fclayers.append(nn.Linear(500,outsize))
@@ -47,12 +47,16 @@ class AtariNetCONV(nn.Module):
         
     def forward(self,x):
         out = x
+        #print(out.shape)
         for layer in self.convlayers:
             out = layer(out)
+            #print(out.shape)
 
         out = out.reshape(out.size(0),-1)
+        #print(out.shape)
         for layer in self.fclayers:
             out = layer(out)
+            #print(out.shape)
             
         if self.outsize != 1:
             out = nn.Softmax(dim = 1)(out)
@@ -156,12 +160,18 @@ def ProcessIm(game,t,obs,prev_obs):
         else:
             obs1 = obs[28:204,22:64]
             obs2 = prev_obs[27:203,22:64]
-   
+        #can't take difference or else the network won't
+        #know where the placed blocks are. We can pass in 
+        #both observations through the colour channel
+        observation = torch.Tensor([obs1,obs2])
+        observation.unsqueeze_(0)
+        return observation
+
     elif game == 'DemonAttack':
         obs1 = obs
         obs2 = prev_obs
-    observation = torch.Tensor(obs1 - obs2)
-    observation.unsqueeze_(0)
-    observation.unsqueeze_(0)
-    return observation
+        observation = torch.Tensor(obs1 - obs2)
+        observation.unsqueeze_(0)
+        observation.unsqueeze_(0)
+        return observation
         

@@ -1,2 +1,2 @@
 # Atari_RL
-Make reinforcement learning agents for Atary games
+Make reinforcement learning agents for Atari games
