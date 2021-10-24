@@ -86,14 +86,13 @@ def select_and_mutate(population,mutations,avg_rewards,pop_size,trunc):
         
     return population,mutations,avg_rewards
 
-def load_gen(game,cur_gen,pop_size,trunc):
+def load_gen(game,cur_gen):
     data = np.load("{}/GAseeds_{}_nmp_{}.npz".format(game,game,cur_gen),allow_pickle = True)
     data = [data[key] for key in data]
     data = data[1]
     population = data[0]
     mutations = data[1]
     avg_rewards = np.array(data[2],dtype = float)
-    select_and_mutate(population,mutations,avg_rewards,pop_size,trunc)
     return population,mutations,avg_rewards
 
 def game_params(game):
@@ -132,6 +131,8 @@ if __name__ == "__main__":
 
     if cur_gen != 0:
         population,mutations,avg_rewards = load_gen(game,cur_gen,pop_size,trunc)
+        select_and_mutate(population,mutations,avg_rewards,pop_size,trunc)
+
     else:
         population = np.random.randint(0,almightyint,size = pop_size+arch_size)
         mutations = [[] for i in range(pop_size+arch_size)]
