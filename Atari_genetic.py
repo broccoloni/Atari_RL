@@ -120,8 +120,8 @@ if __name__ == "__main__":
     game = "Tetris"
     pop_size = 500
     arch_size = 10
-    num_gens = 2
-    cur_gen = 0
+    num_gens = 3
+    cur_gen = 2
     params = game_params(game)
     trunc = params[-1]
 
@@ -130,7 +130,7 @@ if __name__ == "__main__":
     env = gym.wrappers.GrayScaleObservation(env)
 
     if cur_gen != 0:
-        population,mutations,avg_rewards = load_gen(game,cur_gen,pop_size,trunc)
+        population,mutations,avg_rewards = load_gen(game,cur_gen)
         select_and_mutate(population,mutations,avg_rewards,pop_size,trunc)
 
     else:
@@ -140,7 +140,7 @@ if __name__ == "__main__":
 
     print("Starting GA:")
     for gen in range(cur_gen,cur_gen+num_gens):
-        print("Generation:\t{}/{}".format(gen+1,num_gens))
+        print("Generation:\t{}/{} (generation {})".format(gen+1-cur_gen,num_gens,gen+1))
         for i in tqdm(range(pop_size+arch_size)):
             seed = population[i]
             mut = mutations[i]
