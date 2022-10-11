@@ -1,4 +1,5 @@
-#Atari_RL
+# Atari_RL
+
 This was for an assignment in a reinforcement learning class that I took.
 
 This program needs ale-py and gym. After installing ale-py with pip, in the
