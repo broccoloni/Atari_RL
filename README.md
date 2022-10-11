@@ -14,3 +14,5 @@ trained, you can make a gif of them playing the game to see how they do.
 
 An example of a gameplay gif when the agent is trained on 5000 games with PG
 is below
+
+<img src = "https://user-images.githubusercontent.com/38572823/195198691-1c63fd92-49df-401f-8f7c-4f7dd4a6e490.gif" width = "250" height = "250" />
