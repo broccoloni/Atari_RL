@@ -261,7 +261,7 @@ def save_PG(i_batch,params,measures,actor,actorOptimizer,critic,criticOptimizer)
     actor.save("PGsaves/{}_m{}_{}.tar".format(game,midsize,i_batch),actorOptimizer,measures = measures)
     critic.save("PGsaves/Critic_{}_m{}_{}.tar".format(game,midsize,i_batch),criticOptimizer, measures = measures)
     
-def train_PG(params,sum_rewards,sum_rewards_est,batch_lens,env,actor, actorOptimizer,critic,criticOptimizer):
+def train_PG(params,sum_rewards,sum_rewards_est,batch_lens,env,actor, actorOptimizer,critic,criticOptimizer,savefreq=1000):
     cur_batches = params[1]
     num_batches = params[2]
     batch_size = params[3]
@@ -290,6 +290,6 @@ def train_PG(params,sum_rewards,sum_rewards_est,batch_lens,env,actor, actorOptim
         sum_rewards_est.append(sum_r_est)
         batch_lens.append(blens)
         
-        if i_batch != cur_batches and i_batch%100 == 0:
+        if i_batch != cur_batches and i_batch%savefreq == 0:
             measures = [sum_rewards,sum_rewards_est,batch_lens]
             save_PG(i_batch,params,measures,actor,actorOptimizer,critic,criticOptimizer)
