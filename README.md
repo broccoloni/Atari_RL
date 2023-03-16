@@ -13,7 +13,7 @@ the functions I use to train the agents are in helper_functions.py, and the
 network definition, from pytorch, are in AtariNet.py. Once the agents are 
 trained, you can make a gif of them playing the game to see how they do.
 
-An example of a gameplay gif when the agent is trained on 5000 games with PG
+An example of a gameplay gif when the agent is trained on 35000 games (1hr on slow computer) with PG
 is below
 
-<img src = "https://user-images.githubusercontent.com/38572823/195198691-1c63fd92-49df-401f-8f7c-4f7dd4a6e490.gif" width = "250" height = "250" />
+<img src = "https://user-images.githubusercontent.com/38572823/225478735-827f2086-8e2a-4e37-b983-713e284e4d1e.gif" width = "250" height = "250" />
